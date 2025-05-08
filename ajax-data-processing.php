@@ -1,3 +1,7 @@
+add_action('wp_ajax_club_register', 'club_register');
+add_action('wp_ajax_nopriv_club_register', 'club_register');
+
+
 function club_register()
 {
     global $wpdb;
