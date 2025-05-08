@@ -171,3 +171,45 @@ function club_register()
         wp_send_json(['success' => false, 'message' => 'Registration failed. Try again!']);
     }
 }
+
+
+
+
+
+
+
+<!-- file processing  -->
+
+    if (!empty($_FILES['image']['name'])) {
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+
+        // Fetch the current user image URL from the database
+        $current_image_url = $wpdb->get_var($wpdb->prepare(
+            "SELECT image FROM $table_name WHERE id = %d",
+            $user_id
+        ));
+
+        // Delete existing image from the server if it exists
+        if (!empty($current_image_url)) {
+            $image_path = str_replace(site_url('/'), ABSPATH, $current_image_url);
+            if (file_exists($image_path)) {
+                unlink($image_path);
+            }
+        }
+
+        // Modify file name to include timestamp
+        $file_ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
+        $new_file_name = time() . '-' . uniqid() . '.' . $file_ext; // Example: 1711382400-6042f21abc.jpg
+
+        // Rename the file before uploading
+        $_FILES['image']['name'] = $new_file_name;
+
+        // Upload the new image
+        $uploaded_file = wp_handle_upload($_FILES['image'], ['test_form' => false]);
+
+        if (isset($uploaded_file['error'])) {
+            $errors['image'] = 'Billedupload mislykkedes.';
+        } else {
+            $image_url = $uploaded_file['url']; // Store the new image URL for database update
+        }
+    }
